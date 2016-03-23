@@ -5,6 +5,7 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
-    "glob": "^7.0.3"
+    "glob": "^7.0.3",
+    "underscore": "^1.8.3"
   }
 }

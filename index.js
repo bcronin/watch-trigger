@@ -4,15 +4,36 @@ const fs = require('fs');
 const path = require('path');
 const execSync = require('child_process').execSync;
 const glob = require('glob');
+const _ = require('underscore');
 
 const config = require(path.join(process.cwd(), process.argv[2]));
-config.ignore = config.ignore || [];
+if (typeof config.include === 'string') {
+    config.include = [ config.include ];
+}
+if (typeof config.exclude === 'string') {
+    config.exclude = [ config.exclude ];
+}
 
 console.log('Scanning files...');
-var scanList = glob.sync(config.pattern, {
-    nodir : true,
-    ignore : config.ignore,
+var includeList = [];
+var excludeList = [];
+_.each(config.include, (pattern) => {
+    includeList = includeList.concat(glob.sync(pattern, { nodir : true }));
 });
+_.each(config.exclude, (pattern) => {
+    excludeList = excludeList.concat(glob.sync(pattern, { nodir : true }));
+});
+
+var scanList = _.difference(includeList, excludeList);
+
+console.log('Found '+scanList.length+' files...');
+var byExt = _.groupBy(scanList, (file) => {
+    return path.extname(file).substr(1);
+});
+_.each(byExt, function(list, ext) {
+    console.log('  ' + list.length + ' ' + ext + ' files');
+});
+
 var doneList = [];
 var horizon = Date.now();
 
@@ -39,5 +60,5 @@ function poll() {
     }
 }
 
-console.log('Starting file watch (' + scanList.length + ' files)...');
+console.log('Starting file watch...');
 poll();
