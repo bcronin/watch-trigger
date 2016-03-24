@@ -14,28 +14,38 @@ if (typeof config.exclude === 'string') {
     config.exclude = [ config.exclude ];
 }
 
-console.log('Scanning files...');
-var includeList = [];
-var excludeList = [];
-_.each(config.include, (pattern) => {
-    includeList = includeList.concat(glob.sync(pattern, { nodir : true }));
-});
-_.each(config.exclude, (pattern) => {
-    excludeList = excludeList.concat(glob.sync(pattern, { nodir : true }));
-});
-
-var scanList = _.difference(includeList, excludeList);
-
-console.log('Found '+scanList.length+' files...');
-var byExt = _.groupBy(scanList, (file) => {
-    return path.extname(file).substr(1);
-});
-_.each(byExt, function(list, ext) {
-    console.log('  ' + list.length + ' ' + ext + ' files');
-});
-
+var scanList = [];
 var doneList = [];
 var horizon = Date.now();
+
+rescanFiles();
+console.log('Starting file watch...');
+poll();
+
+
+function rescanFiles() {
+    console.log('Scanning files...');
+
+    var includeList = [];
+    var excludeList = [];
+    _.each(config.include, (pattern) => {
+        includeList = includeList.concat(glob.sync(pattern, { nodir : true }));
+    });
+    _.each(config.exclude, (pattern) => {
+        excludeList = excludeList.concat(glob.sync(pattern, { nodir : true }));
+    });
+
+    scanList = _.difference(includeList, excludeList);
+    doneList = [];
+
+    console.log('Found '+scanList.length+' files...');
+    var byExt = _.groupBy(scanList, (file) => {
+        return path.extname(file).substr(1);
+    });
+    _.each(byExt, function(list, ext) {
+        console.log('  ' + list.length + ' ' + ext + ' files');
+    });
+}
 
 function updateTimestamp(filename) {
     var now = fs.statSync(filename).mtime.valueOf();
@@ -49,7 +59,10 @@ function poll() {
     var filename = scanList.shift();
     doneList.push(filename);
 
-    if (updateTimestamp(filename)) {
+    if (!fs.existsSync(filename)) {
+        rescanFiles();
+        setTimeout(poll, 200);
+    } else if (updateTimestamp(filename)) {
         console.log('File modification detected: ' + filename);
         console.log(config.command);
         execSync(config.command, { stdio: 'inherit' });
@@ -59,6 +72,3 @@ function poll() {
         setTimeout(poll, 20);
     }
 }
-
-console.log('Starting file watch...');
-poll();
