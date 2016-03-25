@@ -22,20 +22,14 @@ rescanFiles();
 console.log('Starting file watch...');
 poll();
 
-
 function rescanFiles() {
     console.log('Scanning files...');
-
-    var includeList = [];
-    var excludeList = [];
     _.each(config.include, (pattern) => {
-        includeList = includeList.concat(glob.sync(pattern, { nodir : true }));
+        scanList = scanList.concat(glob.sync(pattern, {
+            nodir : true,
+            ignore : config.exclude,
+        }));
     });
-    _.each(config.exclude, (pattern) => {
-        excludeList = excludeList.concat(glob.sync(pattern, { nodir : true }));
-    });
-
-    scanList = _.difference(includeList, excludeList);
     doneList = [];
 
     console.log('Found '+scanList.length+' files...');
