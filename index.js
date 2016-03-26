@@ -13,6 +13,13 @@ if (typeof config.include === 'string') {
 if (typeof config.exclude === 'string') {
     config.exclude = [ config.exclude ];
 }
+if (typeof config.commands === 'string') {
+    config.commands = [ config.commands ];
+}
+config.commands = config.commands || [];
+if (config.command) {
+    config.commands.push(config.command);
+}
 
 var scanList = [];
 var doneList = [];
@@ -57,9 +64,15 @@ function poll() {
         rescanFiles();
         setTimeout(poll, 200);
     } else if (updateTimestamp(filename)) {
-        console.log('File modification detected: ' + filename);
-        console.log(config.command);
-        execSync(config.command, { stdio: 'inherit' });
+        console.log();
+        console.log('[WATCH] File modification detected: ' + filename);
+        _.each(config.commands, function (cmd) {
+            console.log('[WATCH] ' + cmd);
+            console.log();
+            try {
+                execSync(cmd, { stdio: 'inherit' });
+            } catch (_ignored) { /* ignored */  }
+        })
         horizon = Date.now();
         setTimeout(poll, 200);
     } else {
