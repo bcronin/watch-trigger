@@ -67,6 +67,10 @@ function poll() {
         console.log();
         console.log('[WATCH] File modification detected: ' + filename);
         _.each(config.commands, function (cmd) {
+
+            // Replace $1 with the filename
+            cmd = cmd.replace(/\$1/g, filename.replace(/^\.\//, ''));
+
             console.log('[WATCH] ' + cmd);
             console.log();
             try {
