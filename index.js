@@ -6,21 +6,29 @@ const execSync = require('child_process').execSync;
 const glob = require('glob');
 const _ = require('underscore');
 
-const config = require(path.join(process.cwd(), process.argv[2]));
-if (typeof config.include === 'string') {
-    config.include = [ config.include ];
-}
-if (typeof config.exclude === 'string') {
-    config.exclude = [ config.exclude ];
-}
-if (typeof config.commands === 'string') {
-    config.commands = [ config.commands ];
-}
-config.commands = config.commands || [];
-if (config.command) {
-    config.commands.push(config.command);
+var config = require(path.join(process.cwd(), process.argv[2]));
+if (!config.sets) {
+    config = { sets : [ config ] };
 }
 
+_.each(config.sets, (set) => {
+    if (typeof set.include === 'string') {
+        set.include = [ set.include ];
+    }
+    if (typeof set.exclude === 'string') {
+        set.exclude = [ set.exclude ];
+    }
+    if (typeof set.commands === 'string') {
+        set.commands = [ set.commands ];
+    }
+    set.commands = set.commands || [];
+    if (set.command) {
+        set.commands.push(set.command);
+    }
+    set.root = set.root || process.cwd();
+});
+
+var commands = {};
 var scanList = [];
 var doneList = [];
 var horizon = Date.now();
@@ -31,12 +39,19 @@ poll();
 
 function rescanFiles() {
     console.log('Scanning files...');
-    _.each(config.include, (pattern) => {
-        scanList = scanList.concat(glob.sync(pattern, {
-            nodir : true,
-            ignore : config.exclude,
-        }));
+    _.each(config.sets, (set) => {
+        _.each(set.include, (pattern) => {
+            var list = glob.sync(pattern, {
+                nodir : true,
+                ignore : set.exclude,
+            });
+            _.each(list, (file) => {
+                commands[file] = commands[file] || [];
+                commands[file].push([ set.commands, set.root ]);
+            });
+        });
     });
+    scanList = _.keys(commands);
     doneList = [];
 
     console.log('Found '+scanList.length+' files...');
@@ -46,6 +61,10 @@ function rescanFiles() {
     _.each(byExt, function(list, ext) {
         console.log('  ' + list.length + ' ' + ext + ' files');
     });
+
+    fs.writeFileSync("watch-trigger.status.json", JSON.stringify({
+        commands : commands,
+    }, null, 4));
 }
 
 function updateTimestamp(filename) {
@@ -66,17 +85,20 @@ function poll() {
     } else if (updateTimestamp(filename)) {
         console.log();
         console.log('[WATCH] File modification detected: ' + filename);
-        _.each(config.commands, function (cmd) {
+        _.each(commands[filename], function (group) {
 
-            // Replace $1 with the filename
-            cmd = cmd.replace(/\$1/g, filename.replace(/^\.\//, ''));
-
-            console.log('[WATCH] ' + cmd);
-            console.log();
-            try {
-                execSync(cmd, { stdio: 'inherit' });
-            } catch (_ignored) { /* ignored */  }
-        })
+            _.each(group[0], function (cmd) {
+                // Replace $1 with the filename
+                var base = filename.replace(/^\.\//, '');
+                var rel = path.relative(group[1], base).replace(/\\/g, "/");
+                cmd = cmd.replace(/\$1/g, base).replace(/\$2/g, rel);
+                console.log('[WATCH] ' + cmd);
+                console.log();
+                try {
+                    execSync(cmd, { stdio: 'inherit' });
+                } catch (_ignored) { /* ignored */  }
+            });
+        });
         horizon = Date.now();
         setTimeout(poll, 200);
     } else {
