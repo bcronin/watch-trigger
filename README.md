@@ -29,8 +29,8 @@ The configuration file can be written as either JSON or JavaScript. If it is wri
 
 ```
 {
-  "include" : <glob pattern> | [ <array of glob patterns> ],
-  "exclude" : <glob pattern> | [ <array of glob patterns> ],
+  "include" : <glob pattern> OR [ <array of glob patterns> ],
+  "exclude" : <glob pattern> OR [ <array of glob patterns> ],
 
   "command" : <command string>,
   **OR**
@@ -52,7 +52,6 @@ If multiple sets of glob patterns and commands are required, an array of sets ca
     },
     {
   		"include" : ...,
-  		"exclude" : ...,
   		"commands" : [ ... ],
     },
     ...
