@@ -1,0 +1,14 @@
+{
+    "sets" : [
+        {
+            "include": "files/**/*.txt",
+            "command": "echo Command #1 executed ($1)"
+        },
+        {
+            "include": "files/**/file*",
+            "exclude": "files/**/file00.*",
+            "command": "echo Command #2 executed"
+        }
+
+    ]
+}

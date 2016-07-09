@@ -1,5 +1,7 @@
 'use strict';
 
+const CREATE_DEBUG_FILES = false;
+
 const fs = require('fs');
 const path = require('path');
 const execSync = require('child_process').execSync;
@@ -62,9 +64,11 @@ function rescanFiles() {
         console.log('  ' + list.length + ' ' + ext + ' files');
     });
 
-    fs.writeFileSync("watch-trigger.status.json", JSON.stringify({
-        commands : commands,
-    }, null, 4));
+    if (CREATE_DEBUG_FILES) {
+        fs.writeFileSync("watch-trigger.status.json", JSON.stringify({
+            commands : commands,
+        }, null, 4));
+    }
 }
 
 function updateTimestamp(filename) {
