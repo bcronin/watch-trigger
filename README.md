@@ -2,7 +2,7 @@
 
 A simple utility script that associates file pattern lists with commands to run when a change in one of those files is detected. Uses simple file polling to maximize consistently across platforms (at the expense of some performance).
 
-[![npm version](https://badge.fury.io/js/watch-trigger.svg)](https://badge.fury.io/js/watch-trigger)]
+[![npm version](https://badge.fury.io/js/watch-trigger.svg)](https://badge.fury.io/js/watch-trigger)
 
 ## Usage
 
