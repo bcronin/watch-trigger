@@ -2,6 +2,8 @@
 
 A simple utility script that associates file pattern lists with commands to run when a change in one of those files is detected. Uses simple file polling to maximize consistently across platforms (at the expense of some performance).
 
+[![npm version](https://badge.fury.io/js/watch-trigger.svg)](https://badge.fury.io/js/watch-trigger)]
+
 ## Usage
 
 Create configuration file in your project:
@@ -25,11 +27,11 @@ The configuration file can be written as either JSON or JavaScript. If it is wri
 
 ### Single file set configuration
 
-```json
+```
 {
   "include" : <glob pattern> | [ <array of glob patterns> ],
   "exclude" : <glob pattern> | [ <array of glob patterns> ],
-  
+
   "command" : <command string>,
   **OR**
   "commands": [ <array of sequential command strings> ],
@@ -40,7 +42,7 @@ The configuration file can be written as either JSON or JavaScript. If it is wri
 
 If multiple sets of glob patterns and commands are required, an array of sets can be used:
 
-```json
+```
 {
   "sets" : [
     {
