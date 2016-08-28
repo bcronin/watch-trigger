@@ -1,9 +1,9 @@
 {
   "name": "watch-trigger",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "",
-  "bin" : {
-      "watch-trigger" : "index.js"
+  "bin": {
+    "watch-trigger": "index.js"
   },
   "main": "index.js",
   "license": "MIT",
