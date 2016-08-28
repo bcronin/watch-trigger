@@ -6,7 +6,7 @@ A simple utility script that associates file pattern lists with commands to run 
 
 ## Usage
 
-Create configuration file in your project:
+Create configuration file in your project. It describes the files to include in the watch set and the command to run when any of those files change:
 
 ```json
 {
@@ -64,3 +64,17 @@ If multiple sets of glob patterns and commands are required, an array of sets ca
 The command string is passed directly to the shell for execution (using `child_process.execSync`), with one exception:
 
 * The literal`$1` will be replaced with the filename of the file whose modification triggered the command
+
+### `before` option
+
+The `before` configuration option can be used to describe command(s) that are run exactly once before the watch starts. `watch-tigger` does *not* wait for these commands to finish before starting the watch.
+
+For example, this would start the `dev-server` (and presumably leave it running) and re-run the `build-assets` target whenever an asset file changed *without* restarting the `dev-server`.
+
+```
+{
+    "before" : "make dev-server --no-print-directory",
+    "include" : "src/assets/**/*",
+    "command" : "make build-assets --no-print-directory"
+}
+```

@@ -10,7 +10,17 @@ const _ = require('underscore');
 
 var config = require(path.join(process.cwd(), process.argv[2]));
 if (!config.sets) {
-    config = { sets : [ config ] };
+    config = {
+        before : config.before,
+        sets : [ config ]
+    };
+    delete config.sets.before;
+}
+
+// Commands to run once before the watch
+config.before = config.before || [];
+if (typeof config.before === 'string') {
+    config.before = [ config.before ];
 }
 
 _.each(config.sets, (set) => {
@@ -29,6 +39,24 @@ _.each(config.sets, (set) => {
     }
     set.root = set.root || process.cwd();
 });
+
+
+if (config.before.length) {
+    console.log('Running initial commands...');
+    _.each(config.before, (cmd) => {
+        try {
+            console.log(' ' + cmd);
+            let parts = cmd.split
+            let child = require('child_process').exec(cmd);
+            child.stdout.on('data', (data) => {
+                console.log(`${data}`.replace(/\n$/, ''));
+            });
+            child.stderr.on('data', (data) => {
+                console.log(`${data}`.replace(/\n$/, ''));
+            });
+        } catch (_ignored) { /* ignored */  }
+    });
+}
 
 var commands = {};
 var scanList = [];
